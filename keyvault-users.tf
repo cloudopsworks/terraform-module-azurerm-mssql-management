@@ -13,7 +13,7 @@ locals {
   owner_credentials = {
     for k, v in var.users : k => {
       username    = try(v.username, k)
-      password    = random_password.owner[k].result
+      password    = module.db.owner_passwords[k]
       host        = local.mssql_conn.host
       port        = local.mssql_conn.port
       databases   = try(v.databases, [])
@@ -25,7 +25,7 @@ locals {
   user_credentials = {
     for k, v in var.users : k => {
       username    = try(v.username, k)
-      password    = random_password.user[k].result
+      password    = module.db.user_passwords[k]
       host        = local.mssql_conn.host
       port        = local.mssql_conn.port
       databases   = try(v.databases, [])
