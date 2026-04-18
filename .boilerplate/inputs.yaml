@@ -1,1 +1,69 @@
 # Module configuration
+# All module-specific variables for terraform-module-azurerm-mssql-management.
+# Variables supplied by the Terragrunt hierarchy (org, spoke_def, extra_tags, is_hub) are excluded.
+
+# ── Key Vault ─────────────────────────────────────────────────────────────────
+
+key_vault_name: "kv-platform-prod-001"              # (Required) Name of the existing Azure Key Vault for credential storage.
+key_vault_resource_group_name: "rg-platform-prod"   # (Required) Resource group of the existing Azure Key Vault.
+
+# ── Connection mode ────────────────────────────────────────────────────────────
+# Exactly one of azure/hoop/direct should be configured.
+
+azure:
+  enabled: false                # (Optional) Connect via Azure MSSQL Server. Default: false.
+  from_secret: false            # (Optional) Read admin credentials from a Key Vault JSON secret. Default: false.
+  secret_name: ""               # (Required when from_secret=true) KV secret name; JSON keys: host, port, username, password, dbname.
+  server_name: ""               # (Required when enabled+!from_secret) Short server name (without .database.windows.net).
+  resource_group_name: ""       # (Optional) Resource group of the MSSQL Server.
+  admin_username: "adminuser"   # (Optional) SQL Server admin login. Default: "adminuser".
+  admin_password: ""            # (Optional) SQL Server admin password.
+  db_name: "master"             # (Optional) Default database used for provider connection. Default: "master".
+
+hoop:
+  enabled: false                # (Optional) Enable Hoop tunnel connection mode. Default: false.
+  community: true               # (Optional) true=community (null output); false=enterprise (KV secrets + hoop_connections output). Default: true.
+  agent_id: ""                  # (Required when enabled=true and community=false) Hoop agent UUID.
+  port: 1434                    # (Optional) Local Hoop tunnel port. Default: 1434.
+  db_name: "master"             # (Optional) Database name for Hoop tunnel connection. Default: "master".
+  server_name: ""               # (Optional) Logical server name override for Hoop connection naming.
+  import: false                 # (Optional) Import existing Hoop connection instead of creating. Default: false.
+  tags: {}                      # (Optional) Key/value tags applied to Hoop connections.
+  access_control: []            # (Optional) List of Hoop access control group names.
+
+direct:
+  host: ""                      # (Required when azure.enabled=false and hoop.enabled=false) MSSQL server FQDN or IP.
+  port: 1433                    # (Optional) TCP port. Default: 1433.
+  username: ""                  # (Required when direct mode) Admin login name.
+  password: ""                  # (Required when direct mode) Admin password.
+  db_name: "master"             # (Optional) Default database. Default: "master".
+  server_name: ""               # (Optional) Logical server name for naming purposes.
+
+# ── Users ─────────────────────────────────────────────────────────────────────
+# Map of SQL Server logins/users to create.
+# Key is a logical identifier; username is the actual SQL login name.
+
+users:
+  # appowner:
+  #   username: "appowner"          # (Required) SQL Server login name.
+  #   databases: ["appdb"]          # (Required) List of databases to assign this login/user to.
+  #   roles: ["db_owner"]           # (Optional) Database roles. Default: ["db_owner"] for create_login=true users.
+  #   create_login: true            # (Optional) Create a SQL Server login and owner-class user. Default: true.
+  # appreader:
+  #   username: "appreader"
+  #   databases: ["appdb"]
+  #   roles: ["db_datareader"]      # (Optional) Default for create_login=false users: ["db_datareader"].
+  #   create_login: false
+
+# ── Databases (reference only) ────────────────────────────────────────────────
+# Map of SQL Server databases. Databases must already exist (created by a provisioning module).
+# This map is used for output documentation only.
+
+databases:
+  # appdb:
+  #   name: "appdb"                 # (Required) Actual database name on the SQL Server.
+
+# ── Password management ───────────────────────────────────────────────────────
+
+password_rotation_period: ""    # (Optional) Rotation period string (e.g. "30d", "90d"). Changing this value forces password regeneration. Default: "".
+force_reset: false              # (Optional) Set to true to force password reset for all managed users on next apply. Default: false.
