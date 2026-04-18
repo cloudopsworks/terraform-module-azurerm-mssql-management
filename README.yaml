@@ -1,37 +1,157 @@
-name: Terraform Transit Gateway Module
+name: Terraform Azure MSSQL Management Module
 #logo: logo/logo.jpg
 badges:
   - name: Latest Release
-    image: https://img.shields.io/github/release/<owner/repo>.svg?style=for-the-badge
-    url: https://github.com/<owner/repo>/releases/latest
+    image: https://img.shields.io/github/release/cloudopsworks/terraform-module-azurerm-mssql-management.svg?style=for-the-badge
+    url: https://github.com/cloudopsworks/terraform-module-azurerm-mssql-management/releases/latest
   - name: Last Updated
-    image: https://img.shields.io/github/last-commit/<owner/repo>.svg?style=for-the-badge
-    url: https://github.com/<owner/repo>/commits
+    image: https://img.shields.io/github/last-commit/cloudopsworks/terraform-module-azurerm-mssql-management.svg?style=for-the-badge
+    url: https://github.com/cloudopsworks/terraform-module-azurerm-mssql-management/commits
 
 license: "APACHE2"
 
 copyrights:
   - name: "Cloud Ops Works LLC"
     url: "https://cloudopsworks.co"
-    year: "2026"
+    year: "2021"
 
-github_repo: <owner/repo>
+github_repo: cloudopsworks/terraform-module-azurerm-mssql-management
 
 description: |-
-  <description>
+  Terraform module that manages MSSQL (SQL Server) databases, logins, and users on an existing
+  Azure MSSQL Server. It uses the `betr-io/mssql` provider for database-level management and
+  stores generated credentials as JSON secrets in an Azure Key Vault. Supports three connection
+  modes: direct Azure MSSQL Server lookup, credentials from Key Vault secret, and Hoop tunnel
+  (community or enterprise). Enterprise Hoop mode publishes per-field Key Vault secrets and
+  emits a structured `hoop_connections` output for downstream Hoop provider consumption.
 
 # Introduction to the project
 introduction: |-
-#  This is an introduction.
+  This module provides full lifecycle management of SQL Server logins and database users on an
+  existing Azure MSSQL Server. It handles:
+
+  - **Login creation** — generates random 24-character passwords and stores them in Azure Key Vault.
+  - **Database user assignment** — maps logins to one or more databases with configurable roles.
+  - **Three connection modes**:
+    - `azure` — resolves server FQDN via the AzureRM provider (optionally reads admin credentials from a Key Vault secret).
+    - `hoop` — connects through a local Hoop tunnel (community or enterprise).
+    - `direct` — connects directly using a supplied host/port/credentials.
+  - **Hoop enterprise output** — emits a `hoop_connections` map ready for the Hoop Terraform provider.
 
 # How to use this project
 usage: |-
+  ```hcl
+  # terragrunt.hcl
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-azurerm-mssql-management.git//?ref=v1.0.0"
+  }
+
+  inputs = {
+    # ── Organisation / environment (supplied by hierarchy) ──────────────
+    org = {
+      organization_name = "acme"
+      organization_unit = "platform"
+      environment_name  = "prod"
+      environment_type  = "production"
+    }
+    region   = "eastus2"
+    spoke_def = "001"
+
+    # ── Key Vault (required) ─────────────────────────────────────────────
+    key_vault_name                = "kv-platform-prod-001"
+    key_vault_resource_group_name = "rg-platform-prod-001"
+
+    # ── Connection mode: Azure MSSQL Server ─────────────────────────────
+    azure = {
+      enabled              = true            # (Optional) Enable Azure connection. Default: false.
+      from_secret          = false           # (Optional) Read credentials from KV. Default: false.
+      server_name          = "sql-prod-001"  # (Required) Short server name (without .database.windows.net).
+      resource_group_name  = "rg-sql-prod"   # (Optional) Resource group of the server.
+      admin_username       = "sqladmin"      # (Optional) Admin login. Default: "adminuser".
+      admin_password       = "S3cretPw!"     # (Optional) Admin password.
+      db_name              = "master"        # (Optional) Default database. Default: "master".
+    }
+
+    # ── Users ────────────────────────────────────────────────────────────
+    users = {
+      appowner = {
+        username     = "appowner"            # (Required) SQL Server login name.
+        databases    = ["appdb"]             # (Required) Databases to assign this user to.
+        roles        = ["db_owner"]          # (Optional) Roles. Default: ["db_owner"].
+        create_login = true                  # (Optional) Create a SQL login. Default: true.
+      }
+      appreader = {
+        username     = "appreader"
+        databases    = ["appdb", "reportdb"]
+        roles        = ["db_datareader"]
+        create_login = false                 # (Optional) Will use db_datareader default.
+      }
+    }
+
+    # ── Databases (reference only) ───────────────────────────────────────
+    databases = {
+      appdb    = { name = "appdb" }
+      reportdb = { name = "reportdb" }
+    }
+
+    # ── Password rotation ────────────────────────────────────────────────
+    password_rotation_period = "90d"         # (Optional) Rotation period. Default: "".
+    force_reset              = false         # (Optional) Force password reset. Default: false.
+
+    # ── Hoop (optional, enterprise example) ─────────────────────────────
+    hoop = {
+      enabled        = false                 # (Optional) Enable Hoop. Default: false.
+      community      = false                 # (Optional) false = enterprise mode. Default: true.
+      agent_id       = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  # (Required for enterprise)
+      port           = 1434                  # (Optional) Hoop tunnel port. Default: 1434.
+      db_name        = "master"              # (Optional) Default DB for hoop tunnel. Default: "master".
+      server_name    = ""                    # (Optional) Logical server name override.
+      import         = false                 # (Optional) Import existing connection. Default: false.
+      tags           = {}                    # (Optional) Hoop connection tags.
+      access_control = []                    # (Optional) Hoop access control groups.
+    }
+  }
+  ```
 
 # Example usage
 examples: |-
+  ### Azure connection reading credentials from Key Vault secret
+
+  ```hcl
+  azure = {
+    enabled     = true
+    from_secret = true
+    secret_name = "sql-prod-admin-creds"   # JSON secret with keys: host, port, username, password, dbname
+    server_name = "sql-prod-001"
+  }
+  ```
+
+  ### Direct connection (non-Azure / on-premises)
+
+  ```hcl
+  azure = {}
+  hoop  = {}
+
+  direct = {
+    host        = "10.0.1.50"
+    port        = 1433
+    username    = "sa"
+    password    = "S3cret!"
+    db_name     = "master"
+    server_name = "sql-onprem-001"
+  }
+  ```
 
 # How to get started quickly
 quickstart: |-
+  1. Ensure an Azure MSSQL Server and an Azure Key Vault already exist and the Terraform
+     identity has `Key Vault Secrets Officer` access.
+  2. Reference this module in your Terragrunt stack and supply at minimum:
+     - `key_vault_name` and `key_vault_resource_group_name`
+     - One connection block (`azure`, `hoop`, or `direct`)
+     - At least one entry in `users`
+  3. Run `terragrunt apply` — passwords are generated, logins/users are created, and
+     credentials are stored as JSON secrets in Key Vault.
 
 include:
   - "docs/targets.md"

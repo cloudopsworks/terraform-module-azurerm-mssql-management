@@ -7,8 +7,8 @@
 #     Distributed Under Apache v2.0 License
 #
 
-resource "random_password" "owner" {
-  for_each         = { for k, v in var.users : k => v if try(v.create_login, true) }
+resource "random_password" "user" {
+  for_each         = { for k, v in var.users : k => v if !try(v.create_login, true) }
   length           = 24
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
@@ -18,8 +18,8 @@ resource "random_password" "owner" {
   }
 }
 
-resource "mssql_login" "owner" {
-  for_each = { for k, v in var.users : k => v if try(v.create_login, true) }
+resource "mssql_login" "user" {
+  for_each = { for k, v in var.users : k => v if !try(v.create_login, true) }
   server {
     host = local.mssql_conn.host
     port = local.mssql_conn.port
@@ -29,10 +29,10 @@ resource "mssql_login" "owner" {
     }
   }
   login_name = try(each.value.username, each.key)
-  password   = random_password.owner[each.key].result
+  password   = random_password.user[each.key].result
 }
 
-resource "mssql_user" "owner" {
+resource "mssql_user" "user" {
   for_each = {
     for item in flatten([
       for k, v in var.users : [
@@ -41,9 +41,9 @@ resource "mssql_user" "owner" {
           login_key = k
           username  = try(v.username, k)
           database  = db
-          roles     = try(v.roles, ["db_owner"])
+          roles     = try(v.roles, ["db_datareader"])
         }
-      ] if try(v.create_login, true)
+      ] if !try(v.create_login, true)
     ]) : item.key => item
   }
   server {
@@ -55,9 +55,9 @@ resource "mssql_user" "owner" {
     }
   }
   username   = each.value.username
-  login_name = mssql_login.owner[each.value.login_key].login_name
+  login_name = mssql_login.user[each.value.login_key].login_name
   database   = each.value.database
   roles      = each.value.roles
 
-  depends_on = [mssql_login.owner]
+  depends_on = [mssql_login.user]
 }
