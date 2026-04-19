@@ -204,19 +204,19 @@ Available targets:
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.59 |
 | <a name="requirement_mssql"></a> [mssql](#requirement\_mssql) | ~> 0.3 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.4 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.69.0 |
-| <a name="provider_mssql"></a> [mssql](#provider\_mssql) | 0.3.1 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.8.1 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 4.59 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_db"></a> [db](#module\_db) | git::https://github.com/cloudopsworks/terraform-module-mssql-management.git | v1.0.0 |
 | <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
 
 ## Resources
@@ -230,12 +230,6 @@ Available targets:
 | [azurerm_key_vault_secret.hoop_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.owner_credentials](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
 | [azurerm_key_vault_secret.user_credentials](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) | resource |
-| [mssql_login.owner](https://registry.terraform.io/providers/betr-io/mssql/latest/docs/resources/login) | resource |
-| [mssql_login.user](https://registry.terraform.io/providers/betr-io/mssql/latest/docs/resources/login) | resource |
-| [mssql_user.owner](https://registry.terraform.io/providers/betr-io/mssql/latest/docs/resources/user) | resource |
-| [mssql_user.user](https://registry.terraform.io/providers/betr-io/mssql/latest/docs/resources/user) | resource |
-| [random_password.owner](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [random_password.user](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [azurerm_key_vault.credentials](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
 | [azurerm_key_vault_secret.azure_creds](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault_secret) | data source |
 | [azurerm_mssql_server.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/mssql_server) | data source |
