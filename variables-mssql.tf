@@ -14,6 +14,8 @@
 #     databases: ["mydb"]            # (Required) List of databases for this user
 #     roles: ["db_owner"]            # (Optional) Database roles to assign. Default: ["db_owner"]
 #     create_login: true             # (Optional) Create a SQL Server login. Default: true.
+#     hoop:                             # (Optional) Per-user Hoop settings.
+#       access_control: []              # (Optional) Access control groups merged with hoop.access_control.
 variable "users" {
   description = "Map of SQL Server logins/users to create with their database assignments."
   type        = any
