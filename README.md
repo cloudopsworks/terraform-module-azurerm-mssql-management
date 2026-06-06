@@ -272,21 +272,19 @@ File a GitHub [issue](https://github.com/cloudopsworks/terraform-module-azurerm-
 
 
 ## DevOps Tools
-[]()
+[Our Products](https://cloudopsworks.co/products/)
+[CI/CD Blueprint](https://cloudopsworks.co/cicd-blueprint/)
+[Open Source](https://cloudopsworks.co/open-source/)
+
 ## Slack Community
 
 
 ## Newsletter
-
-## Office Hours
-
-## Contributing
+[Resources Directory](https://cloudopsworks.co/resources/)
 
 ### Bug Reports & Feature Requests
 
 Please use the [issue tracker](https://github.com/cloudopsworks/terraform-module-azurerm-mssql-management/issues) to report any bugs or file feature requests.
-
-### Developing
 
 
 
@@ -377,4 +375,4 @@ This project is maintained by [Cloud Ops Works LLC][website].
   [share_reddit]: https://reddit.com/submit/?url=https://github.com/cloudopsworks/terraform-module-azurerm-mssql-management
   [share_facebook]: https://facebook.com/sharer/sharer.php?u=https://github.com/cloudopsworks/terraform-module-azurerm-mssql-management
   [share_email]: mailto:?subject=Terraform+Azure+MSSQL+Management+Module&body=https://github.com/cloudopsworks/terraform-module-azurerm-mssql-management
-  [beacon]: https://ga-beacon.cloudospworks.co/G-QMZVYYN2VN/cloudopsworks/terraform-module-azurerm-mssql-management?pixel&cs=github&cm=readme&an=terraform-module-azurerm-mssql-management
+  [beacon]: https://ga-beacon.cloudopsworks.co/G-QMZVYYN2VN/cloudopsworks/terraform-module-azurerm-mssql-management?pixel&cs=github&cm=readme&an=terraform-module-azurerm-mssql-management
